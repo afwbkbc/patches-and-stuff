@@ -1,0 +1,64 @@
+#
+# Based on https://bz-attachments.freebsd.org/attachment.cgi?id=178905&action=diff&format=raw&headers=1
+#
+
+--- x11/nvidia-driver/Makefile	(revision 431371)
++++ x11/nvidia-driver/Makefile	(working copy)
+@@ -12,7 +12,7 @@ 
+ PORTNAME=	nvidia-driver
+ DISTVERSION?=	375.26
+ # Always try to set PORTREVISION as it can be overridden by the slave ports
+-PORTREVISION?=	0
++PORTREVISION?=	1
+ CATEGORIES=	x11
+ MASTER_SITES=	NVIDIA/XFree86/FreeBSD-${ARCH_SUFX}/${DISTVERSION}
+ DISTNAME=	NVIDIA-FreeBSD-${ARCH_SUFX}-${DISTVERSION}
+@@ -65,7 +65,8 @@ NVSRC=		.
+ .else
+ EXTRA_PATCHES=	${FILESDIR}/extra-patch-src_nvidia_Makefile \
+ 		${FILESDIR}/extra-patch-src_nvidia_nv-freebsd.h \
+-		${FILESDIR}/extra-patch-src_nvidia_nv-misc.h
++		${FILESDIR}/extra-patch-src_nvidia_nv-misc.h \
++		${FILESDIR}/extra-patch-src_nvidia_nvidia_os.c
+ NVSRC=		nvidia
+ .endif
+ .if ${NVVERSION} >= 358.009
+--- x11/nvidia-driver/files/extra-patch-src_nvidia_nvidia_os.c	(nonexistent)
++++ x11/nvidia-driver/files/extra-patch-src_nvidia_nvidia_os.c	(working copy)
+@@ -0,0 +1,36 @@ 
++-- src/nvidia/nvidia_os.c_orig 2023-02-23 01:08:53.245610000 +0200
++++ src/nvidia/nvidia_os.c      2023-02-23 01:07:10.542287000 +0200
++@@ -13,13 +13,17 @@
++ #include "nv-freebsd.h"
++ #include "nv-retpoline.h"
++ 
+++#if 0
++ #include <sys/consio.h>
++ #include <sys/fbio.h>
+++#endif
++ #include <sys/linker.h>
++ #include <sys/timex.h>
++ #include <sys/stack.h>
++ #include <sys/param.h>
+++#if 0
++ #include <dev/syscons/syscons.h>
+++#endif
++ #include <machine/metadata.h>
++ 
++ MALLOC_DEFINE(M_NVIDIA, "nvidia", "NVIDIA memory allocations");
++@@ -791,6 +795,7 @@
++         }
++     }
+++#if 0
++     {
++         const sc_softc_t *sc = sc_get_softc(0, SC_KERNEL_CONSOLE);
++ 
++         if (sc)
++@@ -816,6 +821,7 @@
++             }
++         }
++     }
+++#endif
++ 
++     *pPhysicalAddress = 0;
++     *pFbWidth = *pFbHeight = *pFbDepth = *pFbPitch = 0;
